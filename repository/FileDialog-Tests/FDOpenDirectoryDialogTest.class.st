@@ -1,7 +1,7 @@
 Class {
 	#name : #FDOpenDirectoryDialogTest,
 	#superclass : #FDFileDialogTest,
-	#category : 'FileDialog-Tests'
+	#category : #'FileDialog-Tests'
 }
 
 { #category : #accessing }
@@ -22,6 +22,7 @@ FDOpenDirectoryDialogTest >> testSelectDirectory [
 	dialog whenSelected: [ :dir | selectedDirectory := dir ].
 	window := dialog open.
 	self assert: dialog currentDirectory equals: root.
+	self assert: dialog selectedEntry equals: root.
 	dialog selectFile: root / 'dir'.
 	self assert: dialog selectedEntry equals: root / 'dir'.
 	dialog confirm.
