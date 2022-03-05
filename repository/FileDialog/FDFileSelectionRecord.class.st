@@ -4,7 +4,8 @@ Class {
 	#instVars : [
 		'file',
 		'timestamp',
-		'basedOnName'
+		'basedOnName',
+		'selected'
 	],
 	#category : #FileDialog
 }
@@ -41,8 +42,19 @@ FDFileSelectionRecord >> file [
 
 { #category : #accessing }
 FDFileSelectionRecord >> file: anObject [
+
 	file := anObject.
-	self timestamp: DateAndTime now
+	self timestamp: DateAndTime now.
+	selected := true
+]
+
+{ #category : #testing }
+FDFileSelectionRecord >> hasBeen: aFile directlyUnselectedInLast: aDuration [
+
+	^ basedOnName not and: [ 
+		  file isNotNil and: [ 
+			  file = aFile and: [ 
+				  DateAndTime now - self timestamp <= aDuration ] ] ]
 ]
 
 { #category : #testing }
@@ -54,8 +66,10 @@ FDFileSelectionRecord >> hasBeenDirectlySelectedInLast: aDuration [
 
 { #category : #initialization }
 FDFileSelectionRecord >> initialize [
+
 	super initialize.
-	basedOnName := false
+	basedOnName := false.
+	selected := false
 ]
 
 { #category : #accessing }
@@ -71,4 +85,11 @@ FDFileSelectionRecord >> timestamp [
 { #category : #accessing }
 FDFileSelectionRecord >> timestamp: anObject [
 	timestamp := anObject
+]
+
+{ #category : #'as yet unclassified' }
+FDFileSelectionRecord >> unselected [
+
+	selected := false.
+	self timestamp: DateAndTime now
 ]

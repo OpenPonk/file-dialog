@@ -36,30 +36,36 @@ FDSaveFileDialog >> isFileValid [
 
 { #category : #actions }
 FDSaveFileDialog >> nameChanged [
+
 	| file |
 	confirmButton enabled: self isFileValid.
-	filesList selectedItem
-		ifNotNil: [ :selectedItem | 
-			selectedItem basename = nameText text
-				| (selectedItem basenameWithoutExtension = nameText text)
-				ifTrue: [ ^ self ] ].
+	filesList selectedItem ifNotNil: [ :selectedItem | 
+		selectedItem basename = nameText text
+		| (selectedItem basenameWithoutExtension = nameText text) ifTrue: [ 
+			^ self ] ].
 	file := filesList listItems
-		detect: [ :any | any basename = nameText text ]
-		ifNone: [ filesList listItems
-				detect: [ :any | any basenameWithoutExtension = nameText text ]
-				ifNone: [ lastSelectedFile := FDFileSelectionRecord none.
-					^ filesList setSelectedIndex: 0 ] ].
-	file isFile
-		ifFalse: [ ^ self ].
+		        detect: [ :any | any basename = nameText text ]
+		        ifNone: [ 
+			        filesList listItems
+				        detect: [ :any | 
+				        any basenameWithoutExtension = nameText text ]
+				        ifNone: [ 
+					        Transcript crShow: 'nameChanged: resetting selection'.
+					        lastSelectedFile := FDFileSelectionRecord none.
+					        ^ filesList setSelectedIndex: 0 ] ].
+	file isFile ifFalse: [ ^ self ].
+	Transcript crShow: 'nameChanged: setting file'.
 	lastSelectedFile := FDFileSelectionRecord byNameOfFile: file.
 	filesList setSelectedItem: file
 ]
 
 { #category : #actions }
 FDSaveFileDialog >> selectFile: aFile [
-	lastSelectedFile isFileSelectedBasedOnName
-		ifTrue: [ lastSelectedFile := FDFileSelectionRecord ofFile: aFile.
-			^ self ].
+
+	lastSelectedFile isFileSelectedBasedOnName ifTrue: [ 
+		Transcript crShow: 'selectFile: based on name'.
+		lastSelectedFile := FDFileSelectionRecord ofFile: aFile.
+		^ self ].
 	super selectFile: aFile
 ]
 

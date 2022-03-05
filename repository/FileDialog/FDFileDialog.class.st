@@ -64,10 +64,16 @@ FDFileDialog >> selectFile: aFile [
 
 { #category : #actions }
 FDFileDialog >> unselected [
-	(lastSelectedFile hasBeenDirectlySelectedInLast: 600 milliSeconds)
-		ifFalse: [ nameText text: ''.
-			^ self ].
-	filesList setSelectedItem: lastSelectedFile file.
-	nameText text: lastSelectedFile file basename.
-	self confirm
+
+	| originalLastSelectedFile |
+	(lastSelectedFile hasBeenDirectlySelectedInLast: 600 milliSeconds) 
+		ifTrue: [ 
+			filesList setSelectedItem: lastSelectedFile file.
+			nameText text: lastSelectedFile file basename.
+			^ self confirm ].
+	originalLastSelectedFile := lastSelectedFile.
+	nameText text: ''.
+	Transcript crShow:
+		'unselected: was not recently selected, unselecting'.
+	lastSelectedFile := originalLastSelectedFile unselected
 ]

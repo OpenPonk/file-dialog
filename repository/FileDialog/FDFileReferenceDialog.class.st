@@ -419,6 +419,7 @@ FDFileReferenceDialog >> initializeDragAndDrop [
 
 { #category : #initialization }
 FDFileReferenceDialog >> initializeFilesList [
+
 	filesList
 		items: self currentFiles;
 		autoDeselect: true;
@@ -426,26 +427,28 @@ FDFileReferenceDialog >> initializeFilesList [
 		icons: [ :entry | self iconFor: entry ];
 		filteringBlock: self filesFilteringBlock;
 		sortingBlock: [ :a :b | 
-			(a isDirectory & b isDirectory not
-				or: [ a isDirectory & b isDirectory
-						& (a basename asLowercase < b basename asLowercase) ])
-				or: [ a isFile & b isFile
-						& (a basename asLowercase < b basename asLowercase) ] ].
-	filesList
-		whenSelectedItemChanged: [ :entry | 
-			entry
-				ifNotNil: [ entry isDirectory
-						ifTrue: [ self openFolder: entry ]
-						ifFalse: [ self selectFile: entry ] ]
-				ifNil: [ self unselected ] ].
-	filesList
-		menu: [ :aMenu :shifterd | 
-			aMenu
-				add: 'Create directory' target: self selector: #createDirectory;
-				add: 'Toggle hidden files'
-					target: self
-					selector: #toggleHiddenFiles;
-				yourself ]
+			(a isDirectory & b isDirectory not or: [ 
+					 a isDirectory & b isDirectory
+					 & (a basename asLowercase < b basename asLowercase) ]) or: [ 
+					a isFile & b isFile
+					& (a basename asLowercase < b basename asLowercase) ] ].
+	filesList whenSelectedItemChanged: [ :entry | 
+		entry
+			ifNotNil: [ 
+				Transcript crShow: 'initializeFilesList: selected'.
+				entry isDirectory
+					ifTrue: [ self openFolder: entry ]
+					ifFalse: [ self selectFile: entry ] ]
+			ifNil: [ 
+				Transcript crShow: 'initializeFilesList: unselected'.
+				self unselected ] ].
+	filesList menu: [ :aMenu :shifterd | 
+		aMenu
+			add: 'Create directory' target: self selector: #createDirectory;
+			add: 'Toggle hidden files'
+			target: self
+			selector: #toggleHiddenFiles;
+			yourself ]
 ]
 
 { #category : #initialization }
@@ -536,8 +539,16 @@ FDFileReferenceDialog >> selectBookmarkFor: aDirectory [
 
 { #category : #actions }
 FDFileReferenceDialog >> selectFile: aFile [
-	filesList selectedItem = aFile
-		ifFalse: [ filesList setSelectedIndex: (filesList listItems indexOf: aFile) ].
+
+	filesList selectedItem = aFile ifFalse: [ 
+		Transcript crShow: 'selectFile: different file'.
+		filesList setSelectedIndex: (filesList listItems indexOf: aFile) ].
+	(lastSelectedFile
+		 hasBeen: aFile
+		 directlyUnselectedInLast: 600 milliseconds) ifTrue: [ 
+		Transcript crShow: 'selectFile: confirming'.
+		self confirm ].
+	Transcript crShow: 'selectFile: marking file as selected'.
 	lastSelectedFile := FDFileSelectionRecord ofFile: aFile
 ]
 
@@ -554,8 +565,13 @@ FDFileReferenceDialog >> toggleHiddenFiles [
 
 { #category : #actions }
 FDFileReferenceDialog >> unselected [
-	(lastSelectedFile hasBeenDirectlySelectedInLast: 600 milliSeconds)
-		ifFalse: [ ^ self ].
+
+	(lastSelectedFile hasBeenDirectlySelectedInLast: 600 milliSeconds) 
+		ifFalse: [ 
+			Transcript crShow: 'unselected: was not directly selected'.
+			lastSelectedFile unselected.
+			^ self ].
+	Transcript crShow: 'unselected: was directly selected'.
 	filesList setSelectedItem: lastSelectedFile file.
 	self confirm
 ]
